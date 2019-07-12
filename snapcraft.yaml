@@ -2,14 +2,26 @@ base: core18
 name: projectlibre
 version: "1"
 version-script: ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-'
-summary: A premier mind-mapping software written in Java
+summary: Project Management software - alternative to Microsoft Project
 description: |
-  A mind mapper, and at the same time an easy-to-operate hierarchical editor
-  with strong emphasis on folding. These two are not really two different
-  things, just two different descriptions of a single application. Often used
-  for knowledge and content management.
 
-  Homepage: http://freemind.sourceforge.net
+  ProjectLibre is project management software, the leading alternative to
+  Microsoft Project. A compliment to OpenOffice and LibreOffice. We have a
+  community site with over 115,000 project management members as well at
+  http://www.projectlibre.org It has been downloaded over 4,000,000 times in 200
+  countries and won InfoWorld "Best of Open Source" award. ProjectLibre is
+  compatible with Microsoft Project 2003, 2007 and 2010 files. You can simply
+  open them on Linux, Mac OS or Windows. ProjectLibre has been rewritten and
+  added key features::
+
+  * Compatibility with Microsoft Project
+  * Gantt Chart
+  * Network Diagram
+  * WBS/RBS charts
+  * Earned Value Costing
+  * Resource Histograms
+
+  Homepage: https://sourceforge.net/projects/projectlibre/
 
 confinement: strict
 grade: stable
