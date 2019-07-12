@@ -1,0 +1,77 @@
+base: core18
+name: projectlibre
+version: "1"
+version-script: ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-'
+summary: A premier mind-mapping software written in Java
+description: |
+  A mind mapper, and at the same time an easy-to-operate hierarchical editor
+  with strong emphasis on folding. These two are not really two different
+  things, just two different descriptions of a single application. Often used
+  for knowledge and content management.
+
+  Homepage: http://freemind.sourceforge.net
+
+confinement: strict
+grade: stable
+icon: data/gui/projectlibre.png
+
+apps:
+  projectlibre:
+    command: desktop-launch $SNAP/projectlibre/projectlibre.sh
+    plugs: 
+      - cups-control
+      - desktop
+      - desktop-legacy
+      - home
+      - network
+      - x11
+    environment:
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
+      JAVA_HOME: $SNAP/usr/lib/jvm/default-java
+      PATH: $SNAP/usr/lib/jvm/default-java/bin:$SNAP/usr/lib/jvm/default-java/jre/bin:$PATH
+
+parts:
+  desktop-glib:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: glib-only
+    plugin: make
+    build-packages:
+      - libglib2.0-dev
+    stage-packages:
+      - adwaita-icon-theme
+      - dmz-cursor-theme
+      - gnome-themes-standard
+      - libgdk-pixbuf2.0-0
+      - libglib2.0-bin
+      - libxkbcommon0
+      - light-themes
+      - locales-all
+      - shared-mime-info
+      - ttf-ubuntu-font-family
+      - xdg-user-dirs
+
+  jdk:
+    plugin: nil
+    stage-packages:
+        -  default-jre
+    filesets:
+        jdk-bits: [-usr/lib/jvm/default-java/bin,
+                   -usr/lib/jvm/default-java/include,
+                   -usr/lib/jvm/default-java/lib,
+                   -usr/share/doc]
+    stage:
+        - $jdk-bits
+
+  projectlibre:
+    after: [desktop-glib, jdk]
+    plugin: nil
+    source: .
+    override-build: |
+        set -eu
+        mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre $SNAPCRAFT_PART_INSTALL/meta/gui
+        tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
+        chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
+        cp ./data/gui/* $SNAPCRAFT_PART_INSTALL/meta/gui/
+    build-packages:
+      - default-jre
+      - tar
