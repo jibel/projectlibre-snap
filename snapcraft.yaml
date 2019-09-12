@@ -25,7 +25,7 @@ description: |
 
 confinement: strict
 grade: stable
-icon: data/gui/projectlibre.png
+icon: snap/gui/projectlibre.png
 
 apps:
   projectlibre:
@@ -79,11 +79,10 @@ parts:
     plugin: nil
     source: .
     override-build: |
-        set -eu
-        mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre $SNAPCRAFT_PART_INSTALL/meta/gui
+        set -eux
+        mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre
         tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
-        cp ./data/gui/* $SNAPCRAFT_PART_INSTALL/meta/gui/
     build-packages:
       - default-jre
       - tar
