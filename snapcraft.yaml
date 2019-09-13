@@ -1,7 +1,5 @@
 base: core18
 name: projectlibre
-version: "1"
-version-script: ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-'
 summary: Project Management software - alternative to Microsoft Project
 description: |
 
@@ -26,6 +24,7 @@ description: |
 confinement: strict
 grade: stable
 icon: snap/gui/projectlibre.png
+adopt-info: projectlibre
 
 apps:
   projectlibre:
@@ -83,6 +82,7 @@ parts:
         mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre
         tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
+        snapcraftctl set-version "$(ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
     build-packages:
       - default-jre
       - tar
