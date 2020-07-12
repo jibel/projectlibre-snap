@@ -54,6 +54,7 @@ parts:
       - gnome-themes-standard
       - libgdk-pixbuf2.0-0
       - libglib2.0-bin
+      - libgtk2.0-0
       - libxkbcommon0
       - light-themes
       - locales-all
@@ -78,7 +79,7 @@ parts:
     plugin: nil
     source: .
     override-build: |
-        set -eux
+        set -eu
         mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre
         tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
