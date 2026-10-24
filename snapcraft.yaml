@@ -23,6 +23,10 @@ description: |
 
 confinement: strict
 grade: stable
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
 title: ProjectLibre
 icon: snap/gui/projectlibre.png
 adopt-info: projectlibre
@@ -44,8 +48,8 @@ apps:
       - x11
     environment:
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
-      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-amd64
-      PATH: $SNAP/usr/lib/jvm/java-21-openjdk-amd64/bin:$PATH
+      JAVA_HOME: $SNAP/usr/lib/jvm/default-java
+      PATH: $SNAP/usr/lib/jvm/default-java/bin:$PATH
 
 parts:
   desktop-glib:
@@ -80,9 +84,16 @@ parts:
         mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share/mime/packages
         cp snap/gui/projectlibre.xml $SNAPCRAFT_PART_INSTALL/usr/share/mime/packages/
 
+        # JAVA_HOME must not hardcode the architecture: symlink default-java
+        # to the JVM staged for the build arch and point the app env at it, so
+        # enabling another architecture only requires a platforms entry
+        # (see issue #3).
+        ln -sfn java-21-openjdk-$(dpkg --print-architecture) \
+            $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/default-java
+
         # cacerts is created by a post-install script of ca-certificates-java
         # but /etc/ is shadowed in the snap, so we need to copy it manually.
-        cd $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-21-openjdk-amd64/lib/security/
+        cd $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-21-openjdk-$(dpkg --print-architecture)/lib/security/
         rm -f cacerts
         cp "$SNAPCRAFT_PART_INSTALL/etc/ssl/certs/java/cacerts" .
         cd -
