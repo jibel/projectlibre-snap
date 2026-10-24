@@ -23,11 +23,14 @@ description: |
 
 confinement: strict
 grade: stable
+title: ProjectLibre
 icon: snap/gui/projectlibre.png
 adopt-info: projectlibre
 website: https://sourceforge.net/projects/projectlibre/
 source-code: https://sourceforge.net/p/projectlibre/code/
 issues: https://sourceforge.net/p/projectlibre/tickets/
+contact: jean-baptiste@ubuntu.com
+license: CPAL-1.0
 
 apps:
   projectlibre:
@@ -42,25 +45,18 @@ apps:
     environment:
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
       JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-amd64
-      PATH: $SNAP/usr/lib/jvm/java-21-openjdk-amd64/bin:$SNAP/usr/lib/jvm/java-21-openjdk-amd64/jre/bin:$PATH
+      PATH: $SNAP/usr/lib/jvm/java-21-openjdk-amd64/bin:$PATH
 
 parts:
   desktop-glib:
     source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-commit: 76be98fecb40165bc162a8a1be084c9b9da16cd8
     source-subdir: glib-only
     plugin: make
     build-packages:
       - libglib2.0-dev
     stage-packages:
-      - adwaita-icon-theme
-      - dmz-cursor-theme
-      - gnome-themes-ubuntu
-      - libgdk-pixbuf-2.0-0
       - libglib2.0-bin
-      - libgtk2.0-0t64
-      - libxkbcommon0
-      - light-themes
-      - locales-all
       - shared-mime-info
       - fonts-ubuntu
       - xdg-user-dirs
@@ -75,16 +71,27 @@ parts:
         tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
 
+        # Register the application/x-projectlibre mime type (see snap/gui/
+        # projectlibre.xml) under usr/share/mime so the desktop-launch helper
+        # compiles it into the user mime db. Note: .pod detection cannot win
+        # against shared-mime-info's application/x-perl glob for *.pod, so
+        # host file managers still see Perl POD; a real fix needs an upstream
+        # extension/mime-type change (see issue #5).
+        mkdir -p $SNAPCRAFT_PART_INSTALL/usr/share/mime/packages
+        cp snap/gui/projectlibre.xml $SNAPCRAFT_PART_INSTALL/usr/share/mime/packages/
+
         # cacerts is created by a post-install script of ca-certificates-java
         # but /etc/ is shadowed in the snap, so we need to copy it manually.
         cd $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-21-openjdk-amd64/lib/security/
         rm -f cacerts
-        cp ../../../../../../etc/ssl/certs/java/cacerts .
+        cp "$SNAPCRAFT_PART_INSTALL/etc/ssl/certs/java/cacerts" .
         cd -
 
         craftctl set version="$(ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
+    prime:
+      - -usr/share/doc
+      - -usr/share/man
     build-packages:
-      - unzip
       - ca-certificates-java
       - openjdk-21-jre
     stage-packages:

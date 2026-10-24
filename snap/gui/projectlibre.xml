@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-projectlibre">
+    <comment>ProjectLibre project</comment>
+    <comment xml:lang="de">ProjectLibre-Projekt</comment>
+    <comment xml:lang="es">Proyecto de ProjectLibre</comment>
+    <comment xml:lang="fr">Projet ProjectLibre</comment>
+    <comment xml:lang="it">Progetto ProjectLibre</comment>
+    <glob pattern="*.pod"/>
+  </mime-type>
+</mime-info>
