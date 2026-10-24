@@ -13,7 +13,10 @@ $ snapcraft
 The build picks the latest `projectlibre-*.tar.gz` found in `download/`.
 
 ## Known Issues
-Printing from a java app is not working and printing is disabled.
+Printing works via the `cups` interface (verified end-to-end against a test
+queue). File association for ProjectLibre's `.pod` documents is limited by a
+glob clash with Perl POD in shared-mime-info; a real fix needs an upstream
+change.
 
 ## Contact Information
 If you have a problem with the packaging as a snap don't hesitate to contact

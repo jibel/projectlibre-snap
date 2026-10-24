@@ -39,8 +39,8 @@ license: CPAL-1.0
 apps:
   projectlibre:
     command: bin/desktop-launch $SNAP/projectlibre/projectlibre.sh
-    plugs: 
-      - cups-control
+    plugs:
+      - cups
       - desktop
       - desktop-legacy
       - home
@@ -50,6 +50,17 @@ apps:
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
       JAVA_HOME: $SNAP/usr/lib/jvm/default-java
       PATH: $SNAP/usr/lib/jvm/default-java/bin:$PATH
+
+# The JDK's print pipeline execs the literal path /usr/bin/lpr (falling back
+# to /usr/bin/lp), which inside the snap resolves to the base's /usr/bin.
+# Bind the cups-bsd/cups-client binaries from $SNAP over those paths so job
+# submission works; they honor CUPS_SERVER=/var/cups/cups.sock from the cups
+# interface (see issue #1).
+layout:
+  /usr/bin/lpr:
+    bind-file: $SNAP/usr/bin/lpr
+  /usr/bin/lp:
+    bind-file: $SNAP/usr/bin/lp
 
 parts:
   desktop-glib:
@@ -117,3 +128,9 @@ parts:
     stage-packages:
       - ca-certificates-java
       - openjdk-21-jre
+      # The JDK submits print jobs by exec'ing /usr/bin/lpr (cups-bsd) and
+      # piping the document to it; discovery/attributes go over IPP directly.
+      # lpr/lp use libcups, which honors the CUPS_SERVER=/var/cups/cups.sock
+      # socket that the cups interface exposes (see issue #1).
+      - cups-bsd
+      - cups-client
