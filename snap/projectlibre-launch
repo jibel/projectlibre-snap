@@ -16,4 +16,18 @@ if [ "$(cat "$font_cache_marker" 2>/dev/null || true)" != "$SNAP_REVISION" ]; th
     printf '%s\n' "$SNAP_REVISION" > "$font_cache_marker"
 fi
 
+# ProjectLibre persists JAVA_EXE as an absolute path in run.conf. Snap data is
+# copied between revisions, but that path belongs to the previous revision.
+run_conf="$HOME/.projectlibre/run.conf"
+if [ -f "$run_conf" ]; then
+    run_conf_tmp="$run_conf.tmp"
+    while IFS= read -r line || [ -n "$line" ]; do
+        case "$line" in
+            JAVA_EXE=*) printf 'JAVA_EXE="%s"\n' "$SNAP/usr/lib/jvm/default-java/bin/java" ;;
+            *) printf '%s\n' "$line" ;;
+        esac
+    done < "$run_conf" > "$run_conf_tmp"
+    mv "$run_conf_tmp" "$run_conf"
+fi
+
 exec "$SNAP/projectlibre/projectlibre.sh" "$@"
