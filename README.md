@@ -3,14 +3,14 @@
 This is the `snapcraft.yaml` file to build the snap package of  ProjectLibre.
 
 ## How to build the package
-Download projectlibre tar.gz file from
+Download the latest projectlibre tar.gz from
 [Sourceforge](https://sourceforge.net/projects/projectlibre/files/)
-in the same directory than the file `snapcraft.yaml`.
-
-Then run the command:
+into the `download/` directory, then run the command:
 ```
 $ snapcraft
 ```
+
+The build picks the latest `projectlibre-*.tar.gz` found in `download/`.
 
 ## Known Issues
 Printing from a java app is not working and printing is disabled.

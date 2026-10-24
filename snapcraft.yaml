@@ -72,7 +72,16 @@ parts:
     override-build: |
         set -eu
         mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre
-        tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
+
+        # The tarball is downloaded separately into download/: pick the latest
+        # projectlibre-*.tar.gz there and derive the snap version from its
+        # filename (see issue #2).
+        tarball=$(ls -1 download/projectlibre-*.tar.gz|sort -V|tail -1)
+        if [ -z "$tarball" ]; then
+            echo "ERROR: no download/projectlibre-*.tar.gz; fetch the latest tarball from https://sourceforge.net/projects/projectlibre/files/" >&2
+            exit 1
+        fi
+        tar xzf "$tarball" -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
 
         # Register the application/x-projectlibre mime type (see snap/gui/
@@ -98,7 +107,7 @@ parts:
         cp "$SNAPCRAFT_PART_INSTALL/etc/ssl/certs/java/cacerts" .
         cd -
 
-        craftctl set version="$(ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
+        craftctl set version="$(basename "$tarball"|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
     prime:
       - -usr/share/doc
       - -usr/share/man
