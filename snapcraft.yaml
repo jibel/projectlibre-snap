@@ -1,4 +1,4 @@
-base: core18
+base: core26
 name: projectlibre
 summary: Project Management software - alternative to Microsoft Project
 description: |
@@ -25,10 +25,13 @@ confinement: strict
 grade: stable
 icon: snap/gui/projectlibre.png
 adopt-info: projectlibre
+website: https://sourceforge.net/projects/projectlibre/
+source-code: https://sourceforge.net/p/projectlibre/code/
+issues: https://sourceforge.net/p/projectlibre/tickets/
 
 apps:
   projectlibre:
-    command: desktop-launch $SNAP/projectlibre/projectlibre.sh
+    command: bin/desktop-launch $SNAP/projectlibre/projectlibre.sh
     plugs: 
       - cups-control
       - desktop
@@ -38,8 +41,8 @@ apps:
       - x11
     environment:
       _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
-      JAVA_HOME: $SNAP/usr/lib/jvm/default-java
-      PATH: $SNAP/usr/lib/jvm/default-java/bin:$SNAP/usr/lib/jvm/default-java/jre/bin:$PATH
+      JAVA_HOME: $SNAP/usr/lib/jvm/java-21-openjdk-amd64
+      PATH: $SNAP/usr/lib/jvm/java-21-openjdk-amd64/bin:$SNAP/usr/lib/jvm/java-21-openjdk-amd64/jre/bin:$PATH
 
 parts:
   desktop-glib:
@@ -51,31 +54,19 @@ parts:
     stage-packages:
       - adwaita-icon-theme
       - dmz-cursor-theme
-      - gnome-themes-standard
-      - libgdk-pixbuf2.0-0
+      - gnome-themes-ubuntu
+      - libgdk-pixbuf-2.0-0
       - libglib2.0-bin
-      - libgtk2.0-0
+      - libgtk2.0-0t64
       - libxkbcommon0
       - light-themes
       - locales-all
       - shared-mime-info
-      - ttf-ubuntu-font-family
+      - fonts-ubuntu
       - xdg-user-dirs
 
-  jdk:
-    plugin: nil
-    stage-packages:
-        -  default-jre
-    filesets:
-        jdk-bits: [-usr/lib/jvm/default-java/bin,
-                   -usr/lib/jvm/default-java/include,
-                   -usr/lib/jvm/default-java/lib,
-                   -usr/share/doc]
-    stage:
-        - $jdk-bits
-
   projectlibre:
-    after: [desktop-glib, jdk]
+    after: [desktop-glib]
     plugin: nil
     source: .
     override-build: |
@@ -83,7 +74,19 @@ parts:
         mkdir -p $SNAPCRAFT_PART_INSTALL/projectlibre
         tar xzf projectlibre*.tar.gz -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
-        snapcraftctl set-version "$(ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
+
+        # cacerts is created by a post-install script of ca-certificates-java
+        # but /etc/ is shadowed in the snap, so we need to copy it manually.
+        cd $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-21-openjdk-amd64/lib/security/
+        rm -f cacerts
+        cp ../../../../../../etc/ssl/certs/java/cacerts .
+        cd -
+
+        craftctl set version="$(ls projectlibre-*.tar.gz|sed 's/.*-\([^-]\+\).tar.gz/\1/'|tr -s '_' '-')"
     build-packages:
-      - default-jre
-      - tar
+      - unzip
+      - ca-certificates-java
+      - openjdk-21-jre
+    stage-packages:
+      - ca-certificates-java
+      - openjdk-21-jre
