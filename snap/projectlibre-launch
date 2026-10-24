@@ -1,0 +1,19 @@
+#!/bin/sh
+
+export FONTCONFIG_FILE="$SNAP/projectlibre/etc/fonts/fonts.conf"
+export FONTCONFIG_PATH="$SNAP/projectlibre/etc/fonts"
+
+# Snap refreshes copy OpenJDK's generated logical-font map into the new
+# revision's user data. Invalidate that cache once per revision so it is
+# regenerated from this snap's fontconfig configuration.
+font_cache_marker="$SNAP_USER_DATA/.java/fontconfig-snap-revision"
+if [ "$(cat "$font_cache_marker" 2>/dev/null || true)" != "$SNAP_REVISION" ]; then
+    for font_cache_dir in "$SNAP_USER_DATA"/.java/fonts/*; do
+        [ -d "$font_cache_dir" ] || continue
+        rm -f "$font_cache_dir"/fcinfo-*.properties
+    done
+    mkdir -p "$(dirname "$font_cache_marker")"
+    printf '%s\n' "$SNAP_REVISION" > "$font_cache_marker"
+fi
+
+exec "$SNAP/projectlibre/projectlibre.sh" "$@"

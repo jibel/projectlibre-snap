@@ -38,7 +38,7 @@ license: CPAL-1.0
 
 apps:
   projectlibre:
-    command: bin/desktop-launch $SNAP/projectlibre/projectlibre.sh
+    command: bin/desktop-launch $SNAP/projectlibre/launch.sh
     plugs:
       - cups
       - desktop
@@ -47,9 +47,13 @@ apps:
       - network
       - x11
     environment:
-      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA
+      _JAVA_OPTIONS: -Duser.home=$SNAP_USER_DATA -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true
       JAVA_HOME: $SNAP/usr/lib/jvm/default-java
       PATH: $SNAP/usr/lib/jvm/default-java/bin:$PATH
+      # These values are also set by launch.sh because desktop-launch replaces
+      # them with the base runtime's fontconfig paths before starting the app.
+      FONTCONFIG_FILE: $SNAP/projectlibre/etc/fonts/fonts.conf
+      FONTCONFIG_PATH: $SNAP/projectlibre/etc/fonts
 
 # The JDK's print pipeline execs the literal path /usr/bin/lpr (falling back
 # to /usr/bin/lp), which inside the snap resolves to the base's /usr/bin.
@@ -94,6 +98,8 @@ parts:
         fi
         tar xzf "$tarball" -C $SNAPCRAFT_PART_INSTALL/projectlibre --strip-components=1
         chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/projectlibre.sh
+        cp snap/projectlibre-launch $SNAPCRAFT_PART_INSTALL/projectlibre/launch.sh
+        chmod +x $SNAPCRAFT_PART_INSTALL/projectlibre/launch.sh
 
         # Register the application/x-projectlibre mime type (see snap/gui/
         # projectlibre.xml) under usr/share/mime so the desktop-launch helper
@@ -122,6 +128,25 @@ parts:
     prime:
       - -usr/share/doc
       - -usr/share/man
+    # Build a self-contained fontconfig configuration under the app's own
+    # directory. desktop-launch replaces FONTCONFIG_FILE and FONTCONFIG_PATH
+    # with the base runtime's config, whose conf.d symlinks point at files
+    # missing from the base. launch.sh restores these paths after
+    # desktop-launch (see issue #6).
+    override-prime: |
+        set -eu
+        craftctl default
+        cfg=$SNAPCRAFT_PRIME/projectlibre/etc/fonts
+        mkdir -p $cfg/conf.d
+        cp $SNAPCRAFT_PRIME/etc/fonts/fonts.conf $cfg/fonts.conf
+        # Replace each conf.d entry (absolute symlink into
+        # /usr/share/fontconfig/conf.avail) with the real rule file, skipping
+        # dangling links that reference rules the base does not stage.
+        for entry in $SNAPCRAFT_PRIME/etc/fonts/conf.d/*; do
+            if [ -f "$entry" ]; then
+                cp -L "$entry" $cfg/conf.d/
+            fi
+        done
     build-packages:
       - ca-certificates-java
       - openjdk-21-jre
@@ -134,3 +159,7 @@ parts:
       # socket that the cups interface exposes (see issue #1).
       - cups-bsd
       - cups-client
+      # Fontconfig configuration is sourced from fontconfig-config and rebuilt
+      # as a self-contained tree under projectlibre/etc/fonts by override-prime
+      # (see issue #6).
+      - fontconfig-config
